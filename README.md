@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Atlas Command Center
 
-## Getting Started
+Immersive 3D command center for **Atlas Funded** — visualise a team of AI agents working in real time.
 
-First, run the development server:
+## Agents
+
+| Agent | Role | Connectors |
+|-------|------|------------|
+| **Ledger** | Finance | Meta, Docs |
+| **Mercury** | Operations | Docs |
+| **Pulse** | Marketing | Meta, Docs |
+| **Forge** | Developer | Docs |
+| **Broker** | Affiliate Manager | Docs |
+| **Muse** | Creative | Higgsfield, Docs |
+
+## Quick start
 
 ```bash
+cp .env.example .env
+npm install
+npm run db:push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Task dispatch
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Use the command bar at the bottom. Tasks are auto-routed to the best agent by keywords. Examples:
 
-## Learn More
+- `Check 7-day Meta ROAS and flag campaigns below 4x`
+- `Summarise our Atlas Meta ads plan for creative refresh`
+- `Generate a 15s vertical ad brief for Atlas Funded`
 
-To learn more about Next.js, take a look at the following resources:
+## Connectors
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Connector | Env vars | Notes |
+|-----------|----------|-------|
+| **docs** | `DOCS_ROOT`, `DOCS_FILES` | Reads local markdown context |
+| **meta** | `META_ACCESS_TOKEN`, `META_AD_ACCOUNT_ID` | Stub mode without credentials |
+| **higgsfield** | `HIGGSFIELD_API_KEY` | Stub mode without API key |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
+- **Next.js 16** — App Router, API routes, SSE stream
+- **React Three Fiber** — static-camera 3D room
+- **Prisma + SQLite** — task/agent persistence (swap to Postgres on Railway)
+- **Connector adapter layer** — add new tools in `src/lib/connectors/`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Railway deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Set `DATABASE_URL` to PostgreSQL
+2. Set connector env vars
+3. Push repo — `railway.toml` included
+
+## Adding an agent
+
+1. Add definition in `src/config/agents.ts`
+2. Wire connectors in the agent's `connectors` array
+3. Optional zone props in `src/components/room/AgentZone.tsx`
+
+## Adding a connector
+
+1. Implement `Connector` in `src/lib/connectors/`
+2. Register in `src/lib/connectors/index.ts`
+3. Reference connector id on agent definitions

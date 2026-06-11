@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum AgentStatus {
+  idle
+  working
+  waiting
+  error
+}
+
+enum TaskStatus {
+  queued
+  running
+  completed
+  failed
+  cancelled
+}
+
+enum TaskDuration {
+  quick
+  long_running
+}
+
+model AgentState {
+  id           String      @id
+  name         String
+  role         String
+  status       AgentStatus @default(idle)
+  currentTask  String?
+  statusLabel  String      @default("Standing by")
+  progress     Int         @default(0)
+  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime    @default(now())
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  prompt      String
+  agentId     String
+  status      TaskStatus   @default(queued)
+  duration    TaskDuration @default(quick)
+  progress    Int          @default(0)
+  result      String?
+  error       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  startedAt   DateTime?
+  completedAt DateTime?
+  logs        TaskLog[]
+}
+
+model TaskLog {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  message   String
+  level     String   @default("info")
+  createdAt DateTime @default(now())
+}
